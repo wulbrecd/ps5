@@ -118,10 +118,9 @@ function addToSavedWords(word) {
 
 document.getElementById("saved_words").innerHTML = "(None)";
 
-let saveButton = document.createElement('button');
+let saveButton = document.createElement('savebtn');
 saveButton.style.backgroundColor = "#3dfe3a";
 saveButton.textContent = "Save";
-wordOutput.appendChild(saveButton);
 
 
 function getRhymes() {
@@ -133,7 +132,7 @@ function getRhymes() {
             for (syllables in results) {
                 wordOutput.innerHTML += `<h3 class="syllables"> Syllables: ${syllables}</h3>`
                 for (item in results[syllables]) {
-                    wordOutput.innerHTML += `<li class="col-item">${results[syllables][item].word} ${saveButton}</li>`;
+                    wordOutput.innerHTML += `<li class="col-item">${results[syllables][item].word} <button id='save' style='background-color:#3dfe3a' value='${results[syllables][item].word}'>Save</button></li>`;
                 }
             }
         } else {
