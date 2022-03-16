@@ -11,19 +11,19 @@
  * @param {string|Function} property: A property to group objects by
  * @returns  An object where the keys representing group names and the values are the items in objects that are in that group
  */
- function groupBy(objects, property) {
+function groupBy(objects, property) {
     // If property is not a function, convert it to a function that accepts one argument (an object) and returns that object's
     // value for property (obj[property])
-    if(typeof property !== 'function') {
+    if (typeof property !== 'function') {
         const propName = property;
         property = (obj) => obj[propName];
     }
 
     const groupedObjects = new Map(); // Keys: group names, value: list of items in that group
-    for(const object of objects) {
+    for (const object of objects) {
         const groupName = property(object);
         //Make sure that the group exists
-        if(!groupedObjects.has(groupName)) {
+        if (!groupedObjects.has(groupName)) {
             groupedObjects.set(groupName, []);
         }
         groupedObjects.get(groupName).push(object);
@@ -31,7 +31,7 @@
 
     // Create an object with the results. Sort the keys so that they are in a sensible "order"
     const result = {};
-    for(const key of Array.from(groupedObjects.keys()).sort()) {
+    for (const key of Array.from(groupedObjects.keys()).sort()) {
         result[key] = groupedObjects.get(key);
     }
     return result;
@@ -83,7 +83,7 @@ function datamuseRequest(url, callback) {
  *   The Datamuse request URL.
  */
 function getDatamuseRhymeUrl(rel_rhy) {
-    return `https://api.datamuse.com/words?${(new URLSearchParams({'rel_rhy': wordInput.value})).toString()}`;
+    return `https://api.datamuse.com/words?${(new URLSearchParams({ 'rel_rhy': wordInput.value })).toString()}`;
 }
 
 /**
@@ -96,7 +96,7 @@ function getDatamuseRhymeUrl(rel_rhy) {
  *   The Datamuse request URL.
  */
 function getDatamuseSimilarToUrl(ml) {
-    return `https://api.datamuse.com/words?${(new URLSearchParams({'ml': wordInput.value})).toString()}`;
+    return `https://api.datamuse.com/words?${(new URLSearchParams({ 'ml': wordInput.value })).toString()}`;
 }
 
 /**
@@ -109,7 +109,7 @@ function addToSavedWords(word) {
     // You'll need to finish this...
     console.log("saving: " + word)
     savedWordsArray.push(word);
-    document.getElementById("saved_words").innerHTML = savedWords.join(', ');
+    document.getElementById("saved_words").innerHTML = savedWordsArray.join(', ');
 }
 
 // Add additional functions/callbacks here.
@@ -118,13 +118,13 @@ function addToSavedWords(word) {
 
 document.getElementById("saved_words").innerHTML = "(None)";
 
-let saveButton = document.createElement('savebtn');
-saveButton.style.backgroundColor = "#3dfe3a";
-saveButton.textContent = "Save";
+
+
 
 
 function getRhymes() {
-    datamuseRequest( getDatamuseRhymeUrl(wordInput.value), (data) => {
+    wordOutput.innerHTML = '...loading';
+    datamuseRequest(getDatamuseRhymeUrl(wordInput.value), (data) => {
         wordOutput.innerHTML = '';
         outputDescription.innerHTML = 'Words that rhyme with ' + wordInput.value;
         if (data.length) {
@@ -132,7 +132,15 @@ function getRhymes() {
             for (syllables in results) {
                 wordOutput.innerHTML += `<h3 class="syllables"> Syllables: ${syllables}</h3>`
                 for (item in results[syllables]) {
-                    wordOutput.innerHTML += `<li class="col-item">${results[syllables][item].word} <button id='save' style='background-color:#3dfe3a' value='${results[syllables][item].word}'>Save</button></li>`;
+                    const bullet = document.createElement('li');
+                    const saveButton = document.createElement('button');
+                    saveButton.style.backgroundColor = "#3dfe3a";
+                    saveButton.id = "save";
+                    saveButton.textContent = "Save";
+                    saveButton.value = results[syllables][item].word;
+                    bullet.append(results[syllables][item].word);
+                    bullet.append(saveButton);
+                    wordOutput.append(bullet);
                 }
             }
         } else {
@@ -147,19 +155,29 @@ showRhymesButton.addEventListener('click', () => {
     getRhymes();
 })
 
-wordInput.addEventListener('keyup', function(e) {
+wordInput.addEventListener('keyup', function (e) {
     if (e.keyCode === 13) {
         getRhymes();
     }
 })
 
 showSynonymsButton.addEventListener('click', () => {
-    datamuseRequest( getDatamuseSimilarToUrl(wordInput.value), (data) => {
+    wordOutput.innerHTML = '...loading';
+    datamuseRequest(getDatamuseSimilarToUrl(wordInput.value), (data) => {
         wordOutput.innerHTML = '';
+        outputDescription.innerHTML = 'Words with a similar meaning to ' + wordInput.value;
         if (data.length) {
             data.forEach((item) => {
-                outputDescription.innerHTML = 'Words with a similar meaning to ' + wordInput.value;
-                wordOutput.innerHTML += `<li class="col-item">${item.word} <button class='save' style='background-color:#3dfe3a' value='${item.word}>Save</button></li>`;
+                // wordOutput.innerHTML += `<li class="col-item">${item.word} <button class='save' style='background-color:#3dfe3a' value='${item.word}>Save</button></li>`;
+                const bullet = document.createElement('li');
+                const saveButton = document.createElement('button');
+                saveButton.style.backgroundColor = "#3dfe3a";
+                saveButton.id = "save";
+                saveButton.textContent = "Save";
+                saveButton.value = item.word;
+                bullet.append(item.word);
+                bullet.append(saveButton);
+                wordOutput.append(bullet);
             });
         } else {
             wordOutput.innerHTML = '(no results)';
@@ -168,8 +186,12 @@ showSynonymsButton.addEventListener('click', () => {
     })
 })
 
-
-
-saveButton.addEventListener('click', () => {
-    addToSavedWords(saveButton.value);
+const saveButton = document.getElementById('save');
+// console.log(wordOutput.children());
+wordOutput.addEventListener('click', (e) => {
+    // saveButton.innerHTML = results[syllables][item].word;
+    if (e.target && e.target.id == 'save') {
+        console.log(e.target.value);
+        addToSavedWords(e.target.value);
+    }
 });
